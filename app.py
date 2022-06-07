@@ -1,6 +1,9 @@
 import hashlib
 import getpass
 
+# Global variable which decides if user is logged in or not
+LOGGED_IN = False
+
 def signup():
     email = input("Enter email address: ")
     pwd = getpass.getpass(prompt="Enter password: ")
@@ -44,23 +47,46 @@ def login():
             parsed_pwd = stored_pwd.split('\n')[0]
 
             if email == stored_email and auth_hash == parsed_pwd:
+                global LOGGED_IN
+                LOGGED_IN = True
                 print("Logged In Successfully!")
                 return
-        
         print("Login failed! \n")
 
 
+def logout():
+    global LOGGED_IN
+    LOGGED_IN = False
+    print('Logout Completed')
+
+
 while True:
-    print("-------------- LOGIN SYSTEM -----------------")
-    print("1. Signup")
-    print("2. Login")
-    print("3. Exit")
-    ch = int(input("Enter your choice: "))
-    if ch == 1:
-        signup()
-    elif ch == 2:
-        login()
-    elif ch == 3:
-        break
+    if LOGGED_IN == False:
+        print("-------------- LOGIN SYSTEM -----------------")
+        print("1. Signup")
+        print("2. Login")
+        print("3. Exit")
+        ch = int(input("Enter your choice: "))
+        if ch == 1:
+            signup()
+        elif ch == 2:
+            login()
+        elif ch == 3:
+            break
+        else:
+            print("Wrong Choice!")
     else:
-        print("Wrong Choice!")
+        print("----------- WELCOME USER ----------------")
+        print("1. User Management")
+        print("2. Weather Info")
+        print("3. Logout")
+        
+        ch = int(input("Enter your choice: "))
+        if ch == 1:
+            print('TODO')
+        elif ch == 2:
+            print('TODO')
+        elif ch == 3:
+            logout()
+        else:
+            print("Wrong Choice!")
