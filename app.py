@@ -1,6 +1,7 @@
-import email
+import requests
 import hashlib
 import getpass
+from decouple import config
 
 # Global variable which decides if user is logged in or not
 LOGGED_IN = False
@@ -137,6 +138,23 @@ def read_users():
         print(user)
 
 
+def weather_info():
+    lat = input('Enter latitude of place: ')
+    lon = input('Enter logitude of place: ')
+    API_key = config('API_key')
+    
+    response = requests.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + lat +"&lon=" + lon + "&exclude=minutely,hourly,daily,alerts&units=metric" + "&appid=" + API_key)
+    if response.status_code != 200:
+        return print('Error getting a response from the API')
+    data = response.json()
+    print('Humidity: ', data['current']['humidity'], "%")
+    print('Pressure: ', data['current']['pressure'], "hPa")
+    print('Temperature: ', data['current']['temp'], "°C")
+    print('Wind Speed: ', data['current']['wind_speed'], "metre/sec")
+    print('Wind Degree: ', data['current']['wind_deg'], "°")
+    print('UV Index: ', data['current']['uvi'])
+
+
 # Menu-driven program
 while True:
     if LOGGED_IN == False:
@@ -177,8 +195,16 @@ while True:
                 print("Wrong Choice!")
 
         elif WEATHER_INFO == True:
-            print('TODO')
-            pass
+            print("----------- WEATHER DASHBOARD ----------------")
+            print("1. Get weather information about a place")
+            print("2. Go back to main menu")
+            ch = int(input("Enter your choice: "))
+            if ch == 1:
+                weather_info()
+            elif ch == 2:
+                WEATHER_INFO = False
+            else:
+                print("Wrong Choice!")
         
         print("----------- WELCOME TO USER DASHBOARD ----------------")
         print("1. User Management")
