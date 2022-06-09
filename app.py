@@ -2,6 +2,21 @@ import requests
 import hashlib
 import getpass
 from decouple import config
+import argparse
+
+parser=argparse.ArgumentParser(
+    description=
+    '''A Python CLI application \n
+    Features: \n
+    1. User Authentication
+       --> Login, Logout
+    2. User Management
+       --> Create, Update, Delete and Read Users
+    3. Weather Information
+       --> Weather info from latitude/longitude of place''',
+    epilog=""" ----- Built for the Drone Base assignment for SWE Intern. ----- """,
+    formatter_class=argparse.RawTextHelpFormatter)
+args=parser.parse_args()
 
 # Global variable which decides if user is logged in or not
 LOGGED_IN = False
