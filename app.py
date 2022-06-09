@@ -4,6 +4,7 @@ import getpass
 from decouple import config
 import argparse
 
+# To add the --help argument to the CLI
 parser=argparse.ArgumentParser(
     description=
     '''A Python CLI application \n
@@ -18,15 +19,17 @@ parser=argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter)
 args=parser.parse_args()
 
+
 # Global variable which decides if user is logged in or not
 LOGGED_IN = False
 USER_MANAGEMENT = False
 WEATHER_INFO = False
 
-def signup():
-    email = input("Enter email address: ")
-    pwd = getpass.getpass(prompt="Enter password: ")
-    conf_pwd = getpass.getpass(prompt="Re-Enter password: ")
+def signup(email, pwd, conf_pwd):
+    if email is None and pwd is None and conf_pwd is None:
+        email = input("Enter email address: ")
+        pwd = getpass.getpass(prompt="Enter password: ")
+        conf_pwd = getpass.getpass(prompt="Re-Enter password: ")
 
     if conf_pwd == pwd:
         # Encode password from string to byte format for hashing
@@ -41,21 +44,24 @@ def signup():
 
             if email in content:
                 print('Account already exists with this E-Mail')
-                return
+                return 406
 
             # Go to EOF and add the user data to file
             f.seek(2)
             f.write(email + ':')
             f.write(hash + '\n')
         print("You have registered successfully!")
-
+        return 200
     else:
         print("Password is not the same!")
+        return 409
 
     
-def login():
-    email = input("Enter email: ")
-    pwd = getpass.getpass(prompt="Enter password: ")
+def login(email, pwd):
+    if email is None and pwd is None: 
+        email = input("Enter email: ")
+        pwd = getpass.getpass(prompt="Enter password: ")
+    
     # Encode password and then hash it.
     auth = pwd.encode()
     auth_hash = hashlib.md5(auth).hexdigest()
@@ -69,8 +75,10 @@ def login():
                 global LOGGED_IN
                 LOGGED_IN = True
                 print("Logged In Successfully!")
-                return
+                return 200
+
         print("Login failed! \n")
+        return 403
 
 
 def logout():
@@ -80,10 +88,11 @@ def logout():
 
 
 # To update a user's password
-def update_user():
+def update_user(email, pwd, new_pwd):
     
-    email = input("Enter user's email to update their password: ")
-    pwd = getpass.getpass(prompt="Enter Old Password: ")
+    if email is None and pwd is None:
+        email = input("Enter user's email to update their password: ")
+        pwd = getpass.getpass(prompt="Enter Old Password: ")
     # Encode password and then hash it.
     auth = pwd.encode()
     auth_hash = hashlib.md5(auth).hexdigest()
@@ -100,7 +109,8 @@ def update_user():
             if email == stored_email and auth_hash == parsed_pwd:
                 valid_credentials = True
                 # Get the new password and hash it
-                new_pwd = getpass.getpass(prompt="Enter New Password: ")
+                if new_pwd is None:
+                    new_pwd = getpass.getpass(prompt="Enter New Password: ")
                 new_auth = new_pwd.encode()
                 new_auth_hash = hashlib.md5(new_auth).hexdigest()
                 # Replace the old password hash with the new password hash
@@ -110,19 +120,21 @@ def update_user():
         
         if valid_credentials == False:
             print("Incorrect Password! \n")
-            return
+            return 403
 
     # Re-write the file with the new changes
     with open("credentials.txt", "w") as f:
         f.write(replacement)
         print('Password Updated!')
+        return 200
 
 
 # To delete a user's account
-def delete_user():
+def delete_user(email):
 
     user_found = False
-    email = input("Enter user's email whose account is to be deleted: ")
+    if email is None:
+        email = input("Enter user's email whose account is to be deleted: ")
 
     with open("credentials.txt", "r") as f:
         lines = f.readlines()
@@ -134,9 +146,11 @@ def delete_user():
                 user_found = True
     
     if user_found == True:
-        print("User: '", email, "'deleted successfully !")
+        print("User:'",email,"'deleted successfully !")
+        return 200
     else:
         print('No account found with that email !')
+        return 404
 
 
 # To display all the user's
@@ -151,6 +165,8 @@ def read_users():
     print('List of all users: \n')
     for user in users:
         print(user)
+
+    return user
 
 
 def weather_info():
@@ -170,68 +186,73 @@ def weather_info():
     print('UV Index: ', data['current']['uvi'])
 
 
-# Menu-driven program
-while True:
-    if LOGGED_IN == False:
-        print("-------------- LOGIN SYSTEM -----------------")
-        print("1. Signup")
-        print("2. Login")
-        print("3. Exit")
-        ch = int(input("Enter your choice: "))
-        if ch == 1:
-            signup()
-        elif ch == 2:
-            login()
-        elif ch == 3:
-            break
-        else:
-            print("Wrong Choice!")
-    else:
-        if USER_MANAGEMENT == True:
-            print("----------- USER MANAGEMENT ----------------")
-            print("1. Create a new user")
-            print("2. Update a user's password")
-            print("3. Delete an existing user")
-            print("4. Display all the user's")
-            print("5. Go back to dashboard")
-                
+def main():
+    # Menu-driven program
+    while True:
+        if LOGGED_IN == False:
+            print("-------------- LOGIN SYSTEM -----------------")
+            print("1. Signup")
+            print("2. Login")
+            print("3. Exit")
             ch = int(input("Enter your choice: "))
             if ch == 1:
-                signup()
+                signup(None, None, None)
             elif ch == 2:
-                update_user()
+                login(None, None)
             elif ch == 3:
-                delete_user()
-            elif ch == 4:
-                read_users()
-            elif ch == 5:
-                USER_MANAGEMENT = False
+                break
+            else:
+                print("Wrong Choice!")
+        else:
+            if USER_MANAGEMENT == True:
+                print("----------- USER MANAGEMENT ----------------")
+                print("1. Create a new user")
+                print("2. Update a user's password")
+                print("3. Delete an existing user")
+                print("4. Display all the user's")
+                print("5. Go back to dashboard")
+                    
+                ch = int(input("Enter your choice: "))
+                if ch == 1:
+                    signup(None, None, None)
+                elif ch == 2:
+                    update_user(None, None, None)
+                elif ch == 3:
+                    delete_user(None)
+                elif ch == 4:
+                    read_users()
+                elif ch == 5:
+                    USER_MANAGEMENT = False
+                else:
+                    print("Wrong Choice!")
+
+            elif WEATHER_INFO == True:
+                print("----------- WEATHER DASHBOARD ----------------")
+                print("1. Get weather information about a place")
+                print("2. Go back to main menu")
+                ch = int(input("Enter your choice: "))
+                if ch == 1:
+                    weather_info()
+                elif ch == 2:
+                    WEATHER_INFO = False
+                else:
+                    print("Wrong Choice!")
+            
+            print("----------- WELCOME TO USER DASHBOARD ----------------")
+            print("1. User Management")
+            print("2. Weather Info")
+            print("3. Logout")
+            
+            ch = int(input("Enter your choice: "))
+            if ch == 1:
+                USER_MANAGEMENT = True
+            elif ch == 2:
+                WEATHER_INFO = True
+            elif ch == 3:
+                logout()
             else:
                 print("Wrong Choice!")
 
-        elif WEATHER_INFO == True:
-            print("----------- WEATHER DASHBOARD ----------------")
-            print("1. Get weather information about a place")
-            print("2. Go back to main menu")
-            ch = int(input("Enter your choice: "))
-            if ch == 1:
-                weather_info()
-            elif ch == 2:
-                WEATHER_INFO = False
-            else:
-                print("Wrong Choice!")
-        
-        print("----------- WELCOME TO USER DASHBOARD ----------------")
-        print("1. User Management")
-        print("2. Weather Info")
-        print("3. Logout")
-        
-        ch = int(input("Enter your choice: "))
-        if ch == 1:
-            USER_MANAGEMENT = True
-        elif ch == 2:
-            WEATHER_INFO = True
-        elif ch == 3:
-            logout()
-        else:
-            print("Wrong Choice!")
+
+if __name__ == '__main__':
+    main()
