@@ -20,11 +20,6 @@ parser=argparse.ArgumentParser(
 args=parser.parse_args()
 
 
-# Global variable which decides if user is logged in or not
-LOGGED_IN = False
-USER_MANAGEMENT = False
-WEATHER_INFO = False
-
 def signup(email, pwd, conf_pwd):
     if email is None and pwd is None and conf_pwd is None:
         email = input("Enter email address: ")
@@ -171,7 +166,7 @@ def read_users():
 
 def weather_info():
     lat = input('Enter latitude of place: ')
-    lon = input('Enter logitude of place: ')
+    lon = input('Enter lomgitude of place: ')
     API_key = config('API_key')
     
     response = requests.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + lat +"&lon=" + lon + "&exclude=minutely,hourly,daily,alerts&units=metric" + "&appid=" + API_key)
@@ -187,6 +182,14 @@ def weather_info():
 
 
 def main():
+    # Global variable which decides if user is logged in or not
+    global LOGGED_IN
+    LOGGED_IN = False
+    global USER_MANAGEMENT
+    USER_MANAGEMENT = False
+    global WEATHER_INFO
+    WEATHER_INFO = False
+
     # Menu-driven program
     while True:
         if LOGGED_IN == False:
