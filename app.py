@@ -84,12 +84,13 @@ class User:
             content = f.read()
             if self.email in content:
                 print('Account already exists with this E-Mail')
-                return 406
+                return False
             # Go to EOF and add the user data to file
             f.seek(2)
             f.write(self.email + ':')
             f.write(hash + '\n')
         print("You have registered successfully!")
+        return True
 
     # Method to update user's password
     def update_user(self, new_pwd):
@@ -113,7 +114,7 @@ class User:
         with open("credentials.txt", "w") as f:
             f.write(replacement)
             print('Password Updated!')
-            return 200
+            return True
 
     # Method to delete the user's account
     def delete_user(self):
@@ -141,15 +142,17 @@ class User:
         for user in users:
             print(user)
 
-        return user
+        return users
 
     
     def weather_info(self, lat, lon):
         API_key = config('API_key')
         
-        response = requests.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + lat +"&lon=" + lon + "&exclude=minutely,hourly,daily,alerts&units=metric" + "&appid=" + API_key)
-        if response.status_code != 200:
-            return print('Error getting a response from the API')
+        response = requests.get("https://api.openweathermap.org/data/2.5/onecall?lat=" + str(lat) +"&lon=" + str(lon) + "&exclude=minutely,hourly,daily,alerts&units=metric&appid=" + str(API_key))
+        
+        if response.ok != True:
+            print('Error getting a response from the API')
+            return 'Bad Response'
         data = response.json()
         print('Weather at', lat, ',', lon, 'is: ')
         print('Humidity: ', data['current']['humidity'], "%")
@@ -158,7 +161,7 @@ class User:
         print('Wind Speed: ', data['current']['wind_speed'], "metre/sec")
         print('Wind Degree: ', data['current']['wind_deg'], "°")
         print('UV Index: ', data['current']['uvi'])
-
+        return 'Success'
 
 
 
@@ -250,7 +253,12 @@ def main():
                 if ch == 1:
                     lat = input('Enter latitude of place: ')
                     lon = input('Enter longitude of place: ')
-                    user.weather_info(lat, lon)
+
+                    try:
+                        user.weather_info(float(lat), float(lon))
+                    except ValueError:
+                        print('Float type value required')
+
 
                 elif ch == 2:
                     WEATHER_INFO = False
